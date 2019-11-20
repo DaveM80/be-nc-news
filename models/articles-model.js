@@ -1,30 +1,30 @@
-const connection = require('../db/connection');
+const connection = require("../db/connection");
 
-const selectArticle = (article_id => {
-    const returnArticle = () =>{
-    return connection
-    .select("*")
+const selectArticle = article_id => {
+  return connection
+    .select("articles.*")
     .from("articles")
-    .where("article_id",article_id)
-    .first()
-    .returning("*")
-    }
-    const returnComments = () => {
+    .count({ comment_count: "comment_id" })
+    .leftJoin("comments", "articles.article_id", "comments.article_id")
+    .modify(query => {
+       if (article_id) query.where("articles.article_id", article_id).first();
+       // if (article_id) query.where("article_id",article_id)
+     })
+    .groupBy('articles.article_id');
+};
+const amendArticle = (article_id, newData) => {
+  return selectArticle(article_id)
+    .then(article => {
+      if (article) {
+        article.votes = article.votes + newData.inc_votes;
         return connection
-        .select("*")
-        .from("comments")
-        .where("article_id",article_id)
-        .returning("*")
-    }
-
-    Promise.all([returnArticle(article_id),returnComments(article_id)])
-    .then(([article,comments])=>{
-        article.comment_count = comments.length
-        console.log(article);
-        return article
+          .update("votes", article.votes)
+          .from("articles")
+          .where("article_id", article_id)
+      } else {
+        return [];
+      }
     })
-});
-
-
-
-module.exports = {selectArticle}
+    .catch(console.log);
+};
+module.exports = { selectArticle, amendArticle };
