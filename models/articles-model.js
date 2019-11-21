@@ -20,7 +20,8 @@ const selectArticle = (article_id, reqQuery) => {
 const amendArticle = (article_id, newData) => {
   return selectArticle(article_id, {}).then(article => {
     if (article) {
-      article.votes = article.votes + newData.inc_votes;
+      const increment = newData.inc_votes || 0
+      article.votes = article.votes + increment;
       return connection
         .update("votes", article.votes)
         .from("articles")

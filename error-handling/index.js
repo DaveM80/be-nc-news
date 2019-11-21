@@ -1,9 +1,18 @@
+exports.send405Error = (req, res, next) => {
+
+    res.status(405).send("Method Not Found");
+
+};
+
 exports.customErrors = (err, req, res, next) => {
-  if (err.status) res.status(err.status).send(err);
+//console.log(err);
+  if (err.status) {
+    res.status(err.status).send(err);
+  }
   else next(err);
 };
 exports.sqlErrors = (err, req, res, next) => {
-  const badRequestSQL = ["22P02"];
+  const badRequestSQL = ["22P02","42703"];
   if (badRequestSQL.includes(err.code)) {
     res
       .status(400)

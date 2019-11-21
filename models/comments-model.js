@@ -1,14 +1,17 @@
 const connection = require("../db/connection");
 
-const selectComments = idObj => {
+const selectComments = (idObj, reqQuery) => {
+  const { sort_by = "created_at", order = "desc" } = reqQuery;
   const idObjKeys = Object.keys(idObj);
-
   return connection
     .select("*")
     .from("comments")
     .modify(query => {
       if (idObjKeys[0] === "article_id") {
-        query.where(idObjKeys[0], idObj[idObjKeys[0]]).returning("*");
+        query
+          .where(idObjKeys[0], idObj[idObjKeys[0]])
+          .orderBy(sort_by, order)
+          .returning("*");
       } else {
         query
           .where(idObjKeys[0], idObj[idObjKeys[0]])
@@ -25,9 +28,10 @@ const insertComment = (article_id, author, body) => {
     .returning("*");
 };
 const amendComment = (comment_id, newData) => {
-  return selectComments({ comment_id: comment_id }).then(comment => {
+  return selectComments({ comment_id },{}).then(comment => {
     if (comment) {
-      comment.votes = comment.votes + newData.inc_votes;
+      const increment = newData.inc_votes || 0
+      comment.votes = comment.votes +increment ;
       return connection
         .update("votes", comment.votes)
         .from("comments")
