@@ -1,13 +1,17 @@
-const connection = require('../db/connection');
-const app = require('../app');
+const connection = require("../db/connection");
 
 const selectUser = username => {
-    return connection
+  return connection
     .select("*")
     .from("users")
-    .where("username",username)
-    .first()
-    .returning("*")
+    .where({ username })
+    .then(([user]) => {
+      if (!user) {
+        return Promise.reject({ status: 404, msg: "Not Found" });
+      } else {
+        return user;
+      }
+    });
 };
 
-module.exports = {selectUser};
+module.exports = { selectUser };

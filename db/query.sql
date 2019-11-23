@@ -1,3 +1,5 @@
-\c nc_news\q
-SELECT * FROM comments;
-WHERE comment_id = 1;
+\c nc_news
+SELECT * FROM topics
+Where slug = 'football';
+
+

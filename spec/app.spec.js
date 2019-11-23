@@ -11,26 +11,26 @@ describe("/api", () => {
   after(() => {
     return connection.destroy();
   });
-  describe('/non-existent-route', () => {
-    it('GET:404 non exsistant route', () => {
+  describe("/non-existent-route", () => {
+    it("GET:404 non exsistant route", () => {
       return request(app)
-      .get("/non-existent-route")
-      .expect(404)
-      .then(({ body }) => {
+        .get("/non-existent-route")
+        .expect(404)
+        .then(({ body }) => {
           expect(body.msg).to.equal("Not Found");
+        });
     });
   });
-})
-describe('/api', () => {
-  it('DELETE:405 ', () => {
-    return request(app)
-    .delete("/api")
-    .expect(405)
-    .then(( body ) => {
-        expect(body.text).to.equal("Method Not Found");
+  describe("/api", () => {
+    it("DELETE:405 ", () => {
+      return request(app)
+        .delete("/api")
+        .expect(405)
+        .then(body => {
+          expect(body.text).to.equal("Method Not Found");
+        });
+    });
   });
-});
-})
   describe("/topics", () => {
     it("GET:200 returns array of topic objects", () => {
       return request(app)
@@ -64,7 +64,7 @@ describe('/api', () => {
       return request(app)
         .get("/api/users/lurker")
         .expect(200)
-        .then(({ body:{user} }) => {
+        .then(({body:{user}}) => {
           expect(user).to.include.keys("username", "avatar_url", "name");
         });
     });
@@ -89,30 +89,97 @@ describe('/api', () => {
         .put("/api/users/butter_bridge")
         .send({})
         .expect(405)
-        .then(( body ) => {
+        .then(body => {
           expect(body.text).to.equal("Method Not Found");
         });
     });
   });
-  describe("/articles/:article_id", () => {
-    it("Get:200  returns articles object array if no id provided", () => {
-      const testArticle = {
-        article_id: 1,
-        title: "Living in the shadow of a great man",
-        body: "I find this existence challenging",
-        votes: 100,
-        topic: "mitch",
-        author: "butter_bridge",
-        created_at: "2018-11-15T12:21:54.000Z",
-        comment_count: 2
-      };
+  describe("/articles", () => {
+    it("GET:200 Sorted by created_at,desc by default", () => {
       return request(app)
         .get("/api/articles")
         .expect(200)
         .then(({ body: { articles } }) => {
-          expect(articles[0]).to.contain.keys(Object.keys(testArticle));
+          expect(+articles[0].created_at.slice(0, 4)).to.be.greaterThan(
+            +articles[articles.length - 1].created_at.slice(0, 4)
+          );
         });
     });
+    it("PATCH:405 Method Not Found ", () => {
+      return request(app)
+        .patch("/api/articles")
+        .send()
+        .expect(405)
+        .then(body => {
+          expect(body.text).to.equal("Method Not Found");
+        });
+    });
+    it("GET:200 Sorted by article_id, asc", () => {
+      return request(app)
+        .get("/api/articles?sort_by=article_id&order=asc")
+        .expect(200)
+        .then(({ body: { articles } }) => {
+          expect(+articles[0].article_id).to.be.lessThan(
+            +articles[articles.length - 1].article_id
+          );
+        });
+    });
+    it("GET:200 filtered by author", () => {
+      return request(app)
+        .get("/api/articles?author=icellusedkars")
+        .expect(200)
+        .then(({ body: { articles } }) => {
+          expect(articles[0].author).to.equal("icellusedkars");
+          expect(articles[3].author).to.equal("icellusedkars");
+          expect(articles[articles.length - 1].author).to.equal(
+            "icellusedkars"
+          );
+        });
+    });
+    it("GET:200 filtered by topic", () => {
+      return request(app)
+        .get("/api/articles?topic=mitch")
+        .expect(200)
+        .then(({ body: { articles } }) => {
+          expect(articles[0].topic).to.equal("mitch");
+          expect(articles[3].topic).to.equal("mitch");
+          expect(articles[articles.length - 1].topic).to.equal("mitch");
+        });
+    });
+    it("GET:400 Bad Request sorted by non existant column", () => {
+      return request(app)
+        .get("/api/articles?sort_by=not-a-column")
+        .expect(400)
+        .then(({ body: { msg } }) => {
+          expect(msg).to.equal("Bad Request");
+        });
+    });
+    it("GET:404 Not found filtered by non existant topic", () => {
+      return request(app)
+        .get("/api/articles?topic=NotATopic")
+        .expect(404)
+        .then(({ body: { msg } }) => {
+          expect(msg).to.equal("Not Found");
+        });
+    });
+    it("GET:404 Not found filtered by non existant author", () => {
+      return request(app)
+        .get("/api/articles?author=NotAUser")//icellusedkars
+        .expect(404)
+        .then(({ body: { msg } }) => {
+          expect(msg).to.equal("Not Found");
+        });
+    });
+    it("GET:200 filtered by existant author with no articles", () => {
+      return request(app)
+        .get("/api/articles?author=lurker")
+        .expect(200)
+        .then(({body:{articles}}) => {
+          expect(articles).to.deep.equal([]);
+        });
+    });
+  });
+  describe("/articles/:article_id", () => {
     it("Get:200  returns article object ", () => {
       const testArticle = {
         article_id: 1,
@@ -255,6 +322,15 @@ describe('/api', () => {
           expect(body.msg).to.equal("Bad Request");
         });
     });
+    it("POST:404 Not Found valid id not found", () => {
+      return request(app)
+        .post("/api/articles/1000/comments")
+        .send({ username: "lurker", body: "This is a test comment" })
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).to.equal("Not Found");
+        });
+    });
     it("PUT:405", () => {
       return request(app)
         .put("/api/articles/1/comments")
@@ -322,85 +398,8 @@ describe('/api', () => {
       return request(app)
         .delete("/api/comments/banan")
         .expect(400)
-        .then(( {body}) => {
+        .then(({ body }) => {
           expect(body.msg).to.equal("Bad Request");
-        });
-    });
-  });
-  describe("/articles", () => {
-    it("GET:200 Sorted by created_at,desc by default", () => {
-      return request(app)
-        .get("/api/articles")
-        .expect(200)
-        .then(({ body: { articles } }) => {
-          expect(+articles[0].created_at.slice(0, 4)).to.be.greaterThan(
-            +articles[articles.length - 1].created_at.slice(0, 4)
-          );
-        });
-    });
-    it("PATCH:405 Method Not Found ", () => {
-      return request(app)
-        .patch("/api/articles")
-        .send()
-        .expect(405)
-        .then(body => {
-          expect(body.text).to.equal("Method Not Found");
-        });
-    });
-    it("GET:200 Sorted by article_id, asc", () => {
-      return request(app)
-        .get("/api/articles?sort_by=article_id&order=asc")
-        .expect(200)
-        .then(({ body: { articles } }) => {
-          expect(+articles[0].article_id).to.be.lessThan(
-            +articles[articles.length - 1].article_id
-          );
-        });
-    });
-    it("GET:200 filtered by author", () => {
-      return request(app)
-        .get("/api/articles?author=icellusedkars")
-        .expect(200)
-        .then(({ body: { articles } }) => {
-          expect(articles[0].author).to.equal("icellusedkars");
-          expect(articles[3].author).to.equal("icellusedkars");
-          expect(articles[articles.length - 1].author).to.equal(
-            "icellusedkars"
-          );
-        });
-    });
-    it("GET:200 filtered by topic", () => {
-      return request(app)
-        .get("/api/articles?topic=mitch")
-        .expect(200)
-        .then(({ body: { articles } }) => {
-          expect(articles[0].topic).to.equal("mitch");
-          expect(articles[3].topic).to.equal("mitch");
-          expect(articles[articles.length - 1].topic).to.equal("mitch");
-        });
-    });
-    it("GET:400 Bad Request sorted by non existant column", () => {
-      return request(app)
-        .get("/api/articles?sort_by=not-a-column")
-        .expect(400)
-        .then(({ body: { msg } }) => {
-          expect(msg).to.equal("Bad Request");
-        });
-    });
-    it("GET:404 Not found filtered by non existant topic", () => {
-      return request(app)
-        .get("/api/articles?topic=NotATopic")
-        .expect(404)
-        .then(({ body: { msg } }) => {
-          expect(msg).to.equal("Not Found");
-        });
-    });
-    it("GET:404 Not found filtered by non existant author", () => {
-      return request(app)
-        .get("/api/articles?author=NotAnAuthor")
-        .expect(404)
-        .then(({ body: { msg } }) => {
-          expect(msg).to.equal("Not Found");
         });
     });
   });

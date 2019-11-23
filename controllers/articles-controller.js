@@ -1,25 +1,30 @@
-const { selectArticle, amendArticle } = require("../models/articles-model");
+const {
+  selectAllArticles,
+  selectArticleById,
+  updateArticle
+} = require("../models/articles-model");
 
-exports.getArticle = (req, res, next) => {
-  const { article_id } = req.params;
-  return selectArticle(article_id, req.query)
+exports.getAllArticles = (req, res, next) => {
+  return selectAllArticles(req.query)
     .then(articles => {
-      if (Array.isArray(articles) && articles.length > 0) {
-        return res.status(200).send({ articles });
-      } else if (articles && !Array.isArray(articles)) {
-        const article = articles;
-        return res.status(200).send({ article });
-      }
-      return next({ status: 404, msg: "Not Found" });
+      return res.status(200).send({ articles });
     })
     .catch(next);
 };
-exports.patchArticles = (req, res, next) => {
+exports.getArticleById = (req, res, next) => {
   const { article_id } = req.params;
-  const newData = req.body;
-  return amendArticle(article_id, newData)
+  return selectArticleById(article_id)
+    .then(article => {
+      return res.status(200).send({ article });
+    })
+    .catch(next);
+};
+
+exports.patchArticle = (req, res, next) => {
+  const { article_id } = req.params;
+  return updateArticle(article_id, req.body)
     .then(() => {
-      return selectArticle(article_id, {});
+      return selectArticleById(article_id);
     })
     .then(article => {
       if (article) return res.status(200).send({ article });

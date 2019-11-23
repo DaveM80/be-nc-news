@@ -5,13 +5,13 @@ exports.send405Error = (req, res, next) => {
 };
 
 exports.customErrors = (err, req, res, next) => {
-//console.log(err);
   if (err.status) {
     res.status(err.status).send(err);
   }
   else next(err);
 };
 exports.sqlErrors = (err, req, res, next) => {
+
   const badRequestSQL = ["22P02","42703"];
   if (badRequestSQL.includes(err.code)) {
     res
