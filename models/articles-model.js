@@ -38,13 +38,13 @@ const selectAllArticles = reqQuery => {
 };
 const selectArticleById = article_id => {
   return selectAllArticles({})
-    .then(articles => {
-      return articles.find(article => {
-        return article.article_id === +article_id;
-      });
-    })
-    .then(article => {
-      if (!article) {
+  .then(articles => {
+    return articles.find(article => {
+      return article.article_id === +article_id;
+    });
+  })
+  .then(article => {
+    if (!article) {
         return Promise.reject({ status: 404, msg: "Not Found" });
       } else {
         return article;

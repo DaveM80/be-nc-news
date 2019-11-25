@@ -17,20 +17,19 @@ exports.getCommentsByArticleId = (req, res, next) => {
 exports.postComment = (req, res, next) => {
   const { article_id } = req.params;
   const { username, body } = req.body;
-    return insertComment(article_id, username, body)
-      .then((comment) => {
-        return res.status(201).send({ comment });
-      })
-      .catch(next);
-
+  return insertComment(article_id, username, body)
+    .then(comment => {
+      return res.status(201).send({ comment });
+    })
+    .catch(next);
 };
 exports.patchComment = (req, res, next) => {
   const { comment_id } = req.params;
   const { body } = req;
   return updateComment(comment_id, body)
     .then(comment => {
-        return res.status(200).send({ comment });
-      })
+      return res.status(200).send({ comment });
+    })
     .catch(next);
 };
 
