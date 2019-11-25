@@ -53,7 +53,6 @@ const selectArticleById = article_id => {
       }
     });
 };
-
 const updateArticle = (article_id, reqBody) => {
   return selectArticleById(article_id)
     .then(article => {

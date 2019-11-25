@@ -1,10 +1,13 @@
-const commentsRouter = require('express').Router();
-const {patchComment,deleteComment} = require('../controllers/comments-controller');
-const {send405Error} = require('../error-handling');
+const commentsRouter = require("express").Router();
+const {
+  patchComment,
+  deleteComment
+} = require("../controllers/comments-controller");
+const { send405Error } = require("../error-handling");
 
 commentsRouter
-.route("/:comment_id")
-.patch(patchComment)
-.delete(deleteComment)
-.all(send405Error)
-module.exports = commentsRouter
+  .route("/:comment_id")
+  .patch(patchComment)
+  .delete(deleteComment)
+  .all(send405Error);
+module.exports = commentsRouter;

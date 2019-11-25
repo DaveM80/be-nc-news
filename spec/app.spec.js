@@ -64,7 +64,7 @@ describe("/api", () => {
       return request(app)
         .get("/api/users/lurker")
         .expect(200)
-        .then(({body:{user}}) => {
+        .then(({ body: { user } }) => {
           expect(user).to.include.keys("username", "avatar_url", "name");
         });
     });
@@ -164,7 +164,7 @@ describe("/api", () => {
     });
     it("GET:404 Not found filtered by non existant author", () => {
       return request(app)
-        .get("/api/articles?author=NotAUser")//icellusedkars
+        .get("/api/articles?author=NotAUser") //icellusedkars
         .expect(404)
         .then(({ body: { msg } }) => {
           expect(msg).to.equal("Not Found");
@@ -174,7 +174,7 @@ describe("/api", () => {
       return request(app)
         .get("/api/articles?author=lurker")
         .expect(200)
-        .then(({body:{articles}}) => {
+        .then(({ body: { articles } }) => {
           expect(articles).to.deep.equal([]);
         });
     });

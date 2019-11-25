@@ -1,34 +1,33 @@
-
-
 const {
   topicData,
   articleData,
   commentData,
   userData
-} = require('../data/index.js');
+} = require("../data/index.js");
 
-const { formatDates, formatComments, makeRefObj } = require('../utils/utils');
+const { formatDates, formatComments, makeRefObj } = require("../utils/utils");
 
 exports.seed = function(knex) {
   return knex.migrate
-  .rollback()
-  .then(()=> knex.migrate.latest())
-  .then(() => {
-
-  const topicsInsertions = knex('topics').insert(topicData)
-  const usersInsertions = knex('users').insert(userData)
-
-  return Promise.all([topicsInsertions, usersInsertions])
+    .rollback()
+    .then(() => knex.migrate.latest())
     .then(() => {
-      const articleFormatted = formatDates(articleData) 
-      return knex("articles").insert(articleFormatted).returning("*")
-    })
-    .then(articleRows => {
-      const articleRef = makeRefObj(articleRows);
-      const formattedComments = formatComments(commentData, articleRef);
-      return knex('comments')
-      .insert(formattedComments)
-      .returning("*")
+      const topicsInsertions = knex("topics").insert(topicData);
+      const usersInsertions = knex("users").insert(userData);
+
+      return Promise.all([topicsInsertions, usersInsertions])
+        .then(() => {
+          const articleFormatted = formatDates(articleData);
+          return knex("articles")
+            .insert(articleFormatted)
+            .returning("*");
+        })
+        .then(articleRows => {
+          const articleRef = makeRefObj(articleRows);
+          const formattedComments = formatComments(commentData, articleRef);
+          return knex("comments")
+            .insert(formattedComments)
+            .returning("*");
+        });
     });
-  })
 };

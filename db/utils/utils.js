@@ -28,6 +28,7 @@ exports.formatComments = (comments, articleRef) => {
     return newObj;
   });
 };
+
 exports.exsistanceCheck = ({ val, lookupFunc }) => {
   if (val !== "") {
     return lookupFunc(val).then(result => {
