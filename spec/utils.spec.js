@@ -7,6 +7,20 @@ const {
 } = require('../db/utils/utils');
 
 describe('formatDates', () => {
+  it('Given array, returns new array', () => {
+    const testArr = [{
+      title: 'Living in the shadow of a great man',
+      topic: 'mitch',
+      author: 'butter_bridge',
+      body: 'I find this existence challenging',
+      created_at: 1542284514171,
+      votes: 100,
+    }]
+    const expected = [{...testArr[0]}]
+    formatDates(testArr);
+
+    expect(testArr).to.deep.equal(expected);
+  });
   it('Given array with an object convert timestamp to string date and time  ', () => {
     const testArr = [{
       title: 'Living in the shadow of a great man',
@@ -102,6 +116,19 @@ describe('makeRefObj', () => {
 });
 
 describe('formatComments', () => {
+  it('Given array, returns new array', () => {
+    const testArr = [{
+      body: 'Itaque quisquam est similique et est perspiciatis reprehenderit voluptatem autem. Voluptatem accusantium eius error adipisci quibusdam doloribus.',
+      belongs_to: 'The People Tracking Every Touch, Pass And Tackle in the World Cup',
+      created_by: 'tickle122',
+      votes: -1,
+      created_at: 1468087638932,
+    }];
+    const expected = [{...testArr[0]}]
+    formatDates(testArr);
+
+    expect(testArr).to.deep.equal(expected);
+  });
   it('Given array with single object return formatted object', () => {
     const comments = [{
       body: 'Itaque quisquam est similique et est perspiciatis reprehenderit voluptatem autem. Voluptatem accusantium eius error adipisci quibusdam doloribus.',

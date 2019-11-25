@@ -206,6 +206,14 @@ describe("/api", () => {
           expect(article.votes).to.equal(101);
         });
     });
+    it("GET:400 if invalid id", () => {
+      return request(app)
+        .get("/api/articles/banan")
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).to.equal("Bad Request");
+        });
+    });
     it("PATCH:200 return unopdated object if no body passed", () => {
       return request(app)
         .patch("/api/articles/1")

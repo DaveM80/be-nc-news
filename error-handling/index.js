@@ -13,15 +13,24 @@ exports.customErrors = (err, req, res, next) => {
 exports.sqlErrors = (err, req, res, next) => {
 
   const badRequestSQL = ["22P02","42703"];
+  const notFoundSQL = ["23503"]
   if (badRequestSQL.includes(err.code)) {
     res
       .status(400)
       .send({
         status: 400,
         msg: "Bad Request",
-        sqlMsg: sqlErrorDict[err.code]
       });
-  } else next(err);
+  }else if(notFoundSQL.includes(err.code)){
+    res
+      .status(404)
+      .send({
+        status: 404,
+        msg: "Not Found",
+      });
+  }else{
+    next(err);
+  } 
 };
 exports.internalServerError = (req, res, next) => {
   res.status(500).send("Internal Server Error");

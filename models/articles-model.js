@@ -37,14 +37,16 @@ const selectAllArticles = reqQuery => {
   );
 };
 const selectArticleById = article_id => {
-  return selectAllArticles({})
-  .then(articles => {
-    return articles.find(article => {
-      return article.article_id === +article_id;
-    });
-  })
-  .then(article => {
-    if (!article) {
+  return connection
+    .select("articles.*")
+    .from("articles")
+    .count({ comment_count: "comment_id" })
+    .leftJoin("comments", "articles.article_id", "comments.article_id")
+    .where("articles.article_id", article_id)
+    .groupBy("articles.article_id")
+    .first()
+    .then(article => {
+      if (!article) {
         return Promise.reject({ status: 404, msg: "Not Found" });
       } else {
         return article;

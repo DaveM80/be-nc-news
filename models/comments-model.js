@@ -3,33 +3,35 @@ const { exsistanceCheck } = require("../db/utils/utils");
 const { selectArticleById } = require("./articles-model");
 
 const selectCommentsByArticleId = (article_id, reqQuery) => {
-  const { sort_by = "created_at", order = "desc" } = reqQuery;
   const filter = {
     val: "",
     lookupFunc: ""
   };
   filter.val = article_id;
   filter.lookupFunc = selectArticleById;
-
-  const selectCommentsQuery = connection
-    .select("*")
-    .from("comments")
-    .where({ article_id })
-    .orderBy(sort_by, order)
-    .then(comments => {
-      if (!comments) {
+  const { sort_by = "created_at", order = "desc" ,username} = reqQuery;
+  const author = username;
+  const slectCommentsQuery = connection
+  .select("*")
+  .from("comments")
+  .modify(query=>{
+    query.where({ article_id })
+    if(author) query.andWhere({author})
+  })
+  .orderBy(sort_by, order)
+  .then(comments => {
+    if (!comments) {
         return Promise.reject({ status: 404, msg: "Not Found" });
       } else {
         return comments;
       }
     });
-  return Promise.all([exsistanceCheck(filter), selectCommentsQuery]).then(
-    ([article, comments]) => {
-      return comments;
-    }
-  );
-};
-
+    return Promise.all([exsistanceCheck(filter), slectCommentsQuery]).then(
+      ([article, comments]) => {
+        return comments;
+      }
+    );
+  };
 const selectCommentsByCommentId = (comment_id) => {
   return connection
     .select("*")
@@ -49,14 +51,8 @@ const insertComment = (article_id, author, body) => {
   if (!author || !body) {
     return Promise.reject({ status: 400, msg: "Bad Request" });
   } else {
-    const filter = {
-      val: "",
-      lookupFunc: ""
-    };
-    filter.val = article_id;
-    filter.lookupFunc = selectArticleById;
 
-    const insertCommentsQuery = connection
+    return connection
       .insert({ article_id, author, body })
       .into("comments")
       .returning("*")
@@ -67,11 +63,6 @@ const insertComment = (article_id, author, body) => {
           return comment;
         }
       });
-    return Promise.all([exsistanceCheck(filter), insertCommentsQuery]).then(
-      ([article, comments]) => {
-        return comments;
-      }
-    );
   }
 };
 const updateComment = (comment_id, newData) => {

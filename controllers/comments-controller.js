@@ -32,7 +32,6 @@ exports.patchComment = (req, res, next) => {
     })
     .catch(next);
 };
-
 exports.deleteComment = (req, res, next) => {
   const { comment_id } = req.params;
   return removeComment(comment_id)
